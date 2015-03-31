@@ -1,0 +1,2 @@
+cd  E:\GeckoHtml\tcc\src\
+E:\GeckoHtml\tcc\tcc.exe -o ..\test.exe  E:\GeckoHtml\tcc\src\S(c)ript.c E:\GeckoHtml\tcc\src\libtcc.c
