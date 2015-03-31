@@ -8,3 +8,6 @@ tags
 tccide
 mongodb
 examples
+debug.txt
+lib/bstrlib.o
+lib/libtcc1.a
