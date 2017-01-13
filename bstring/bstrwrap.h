@@ -1,8 +1,8 @@
 /*
  * This source file is part of the bstring string library.  This code was
- * written by Paul Hsieh in 2002-2010, and is covered by either the 3-clause 
- * BSD open source license or GPL v2.0. Refer to the accompanying documentation 
- * for details on usage and license.
+ * written by Paul Hsieh in 2002-2015, and is covered by the BSD open source
+ * license and the GPL. Refer to the accompanying documentation for details
+ * on usage and license.
  */
 
 /*
@@ -28,13 +28,13 @@
 #  endif
 #endif
 
-// By default it is assumed that STL has been installed and works for your
+// By default it assumed that STL has been installed and works for your
 // compiler.  If this is not the case, then #define BSTRLIB_CANNOT_USE_STL
 #if !defined (BSTRLIB_CANNOT_USE_STL) && !defined (BSTRLIB_CAN_USE_STL)
 #define BSTRLIB_CAN_USE_STL
 #endif
 
-// By default it is assumed that std::iostream works well with your compiler.  
+// By default it assumed that std::iostream works well with your compiler.  
 // If this is not the case, then #define BSTRLIB_CAN_USE_IOSTREAM
 #if !defined (BSTRLIB_CANNOT_USE_IOSTREAM) && !defined (BSTRLIB_CAN_USE_IOSTREAM)
 #define BSTRLIB_CAN_USE_IOSTREAM
@@ -80,11 +80,11 @@ namespace Bstrlib {
 #if defined(BSTRLIB_CAN_USE_STL)
 struct CBStringException : public std::exception {
 private:
-	std::string m_msg;
+	std::string msg;
 public:
-	CBStringException (const std::string& msg) : m_msg(msg) {}
+	CBStringException (const std::string inmsg) : msg(inmsg) {}
 	virtual ~CBStringException () throw () {}
-	virtual const char *what () const throw () { return m_msg.c_str(); }
+	virtual const char *what () const throw () { return msg.c_str(); }
 };
 #else
 struct CBStringException {

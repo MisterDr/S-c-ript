@@ -1,8 +1,8 @@
 /*
  * This source file is part of the bstring string library.  This code was
- * written by Paul Hsieh in 2002-2010, and is covered by either the 3-clause 
- * BSD open source license or GPL v2.0. Refer to the accompanying documentation 
- * for details on usage and license.
+ * written by Paul Hsieh in 2002-2004, and is covered by the BSD open source 
+ * license. Refer to the accompanying documentation for details on usage and 
+ * license.
  */
 
 /*
