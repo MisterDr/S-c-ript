@@ -1,1 +1,0 @@
-..\..\tcc -o mtest.exe mongotsts.c -lwsock32

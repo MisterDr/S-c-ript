@@ -1,1 +1,0 @@
-..\..\tcc -o test.exe simple.c ..\..\include\bson.c ..\..\include\encoding.c ..\..\include\mongo.c ..\..\include\md5.c ..\..\include\numbers.c -lwsock32
