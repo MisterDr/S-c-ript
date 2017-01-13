@@ -1,7 +1,6 @@
 [submodule "3rdparty/mongo-c-driver"]
 	path = 3rdparty/mongo-c-driver
 	url = https://github.com/mongodb/mongo-c-driver.git
-
 [submodule "3rdparty/tinycc"]
-        path = 3rdparty/tinycc
-        url = git://repo.or.cz/tinycc.git
+	path = 3rdparty/tinycc
+	url = git://repo.or.cz/tinycc.git
