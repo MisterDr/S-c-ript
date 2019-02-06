@@ -1,457 +1,317 @@
+#project(tcc C)
+#cmake_minimum_required(VERSION 2.6)
+#enable_testing()
+#
+## Detect native platform
+#if(WIN32)
+#  set(BUILD_SHARED_LIBS ON)
+#  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM")
+#    set(TCC_NATIVE_TARGET "WinCE")
+#  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+#    set(TCC_NATIVE_TARGET "Win64")
+#  else()
+#    set(TCC_NATIVE_TARGET "Win32")
+#  endif()
+#else()
+#  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+#    set(TCC_NATIVE_TARGET "ARM")
+#    if(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv5")
+#      set(TCC_ARM_VERSION_DEFAULT 5)
+#    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv6")
+#      set(TCC_ARM_VERSION_DEFAULT 6)
+#    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv7")
+#      set(TCC_ARM_VERSION_DEFAULT 7)
+#    else()
+#      set(TCC_ARM_VERSION_DEFAULT 4)
+#    endif()
+#  elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+#    set(TCC_NATIVE_TARGET "x86_64")
+#    set(TCC_ARCH_DIR "x86_64-linux-gnu")
+#  else()
+#    set(TCC_NATIVE_TARGET "i386")
+#    set(TCC_ARCH_DIR "i386-linux-gnu")
+#  endif()
+#endif()
+#
+#if(WIN32)
+#  set(EXE_PATH ".")
+#  set(TCC_LIB_PATH lib)
+#  set(NATIVE_LIB_PATH)
+#  set(DOC_PATH doc)
+#else()
+#  set(EXE_PATH bin)
+#  set(TCC_LIB_PATH lib/tcc)
+#  set(NATIVE_LIB_PATH lib)
+#  set(DOC_PATH share/doc/tcc)
+#endif()
+#
+#if(NOT WIN32)
+#  if(EXISTS /usr/lib/${TCC_ARCH_DIR}/crti.o)
+#    set(CONFIG_LDDIR lib/${TCC_ARCH_DIR})
+#    set(CONFIG_MULTIARCHDIR ${TCC_ARCH_DIR})
+#  elseif(EXISTS /usr/lib64/crti.o)
+#    set(CONFIG_LDDIR lib64)
+#  endif()
+#endif()
+#
+## Use two variables to keep CMake configuration variable names consistent
+#set(TCC_BCHECK OFF CACHE BOOL "Enable bounds checking")
+#set(CONFIG_TCC_BCHECK ${TCC_BCHECK})
+#set(TCC_ASSERT OFF CACHE BOOL "Enable assertions")
+#set(CONFIG_TCC_ASSERT ${TCC_ASSERT})
+#
+#set(TCC_BUILD_NATIVE ON CACHE BOOL "Build native compiler")
+#set(TCC_BUILD_I386 OFF CACHE BOOL "Build i386 cross compiler")
+#set(TCC_BUILD_X64 OFF CACHE BOOL "Build x86-64 cross compiler")
+#set(TCC_BUILD_WIN32 OFF CACHE BOOL "Build Windows i386 cross compiler")
+#set(TCC_BUILD_WIN64 OFF CACHE BOOL "Build Windows x86-64 cross compiler")
+#set(TCC_BUILD_WINCE OFF CACHE BOOL "Build Windows CE cross compiler")
+#set(TCC_BUILD_ARM_FPA OFF CACHE BOOL "Build arm-fpa cross compiler")
+#set(TCC_BUILD_ARM_FPA_LD OFF CACHE BOOL "Build arm-fpa-ld cross compiler")
+#set(TCC_BUILD_ARM_VFP OFF CACHE BOOL "Build arm-vfp cross compiler")
+#set(TCC_BUILD_ARM_EABI OFF CACHE BOOL "Build ARM EABI cross compiler")
+#set(TCC_BUILD_ARM_EABIHF OFF CACHE BOOL "Build ARM EABI hardware float cross compiler")
+#set(TCC_BUILD_ARM OFF CACHE BOOL "Build ARM cross compiler")
+#set(TCC_BUILD_C67 OFF CACHE BOOL "Build C67 cross compiler")
+#
+#set(TCC_ARM_VERSION ${TCC_ARM_VERSION_DEFAULT} CACHE STRING "ARM target CPU version")
+#set_property(CACHE TCC_ARM_VERSION PROPERTY STRINGS 4 5 6 7)
+#
+#if(WIN32)
+#  set(CONFIG_TCCDIR ${CMAKE_INSTALL_PREFIX})
+#else()
+#  set(CONFIG_TCCDIR ${CMAKE_INSTALL_PREFIX}/lib/tcc)
+#endif()
+#
+#file(STRINGS "VERSION" TCC_VERSION)
+#list(GET TCC_VERSION 0 TCC_VERSION)
+#include_directories(${CMAKE_BINARY_DIR})
+#configure_file(config.h.in config.h)
+#configure_file(config.texi.in config.texi)
+#
+## Utility variables
+#set(I386_SOURCES i386-gen.c i386-asm.c i386-asm.h i386-tok.h)
+#set(X86_64_SOURCES x86_64-gen.c i386-asm.c x86_64-asm.h)
+#set(ARM_SOURCES arm_gen.c)
+#
+#set(LIBTCC1_I386_SOURCES lib/alloca86.S lib/alloca86-bt.S)
+#set(LIBTCC1_WIN_SOURCES win32/lib/crt1.c win32/lib/wincrt1.c win32/lib/dllcrt1.c win32/lib/dllmain.c win32/lib/chkstk.S)
+#if(NOT WIN32)
+#  set(LIBTCC1_I386_SOURCES ${LIBTCC1_I386_SOURCES} lib/bcheck.c)
+#endif()
+#
+#if(WIN32)
+#  add_executable(tiny_impdef win32/tools/tiny_impdef.c)
+#endif()
+#add_executable(tiny_libmaker_32 win32/tools/tiny_libmaker.c)
+#set_target_properties(tiny_libmaker_32 PROPERTIES COMPILE_DEFINITIONS TCC_TARGET_I386)
+#add_executable(tiny_libmaker_64 win32/tools/tiny_libmaker.c)
+#set_target_properties(tiny_libmaker_64 PROPERTIES COMPILE_DEFINITIONS TCC_TARGET_X86_64)
+#
+#macro(make_libtcc1 prefix xcc xar defs includes sources)
+#  set(libtcc1_prefix)
+#  if("${prefix}" STRGREATER "")
+#    set(libtcc1_prefix ${prefix}-)
+#  endif()
+#  set(libtcc1_flags -I${CMAKE_SOURCE_DIR}/include)
+#  foreach(i ${defs})
+#    set(libtcc1_flags ${libtcc1_flags} -D${i})
+#  endforeach()
+#  foreach(i ${includes})
+#    set(libtcc1_flags ${libtcc1_flags} -I${CMAKE_SOURCE_DIR}/${i})
+#  endforeach()
+#  set(libtcc1_objects)
+#  foreach(libtcc1_c lib/libtcc1.c ${sources})
+#    string(REGEX MATCH "[^/]+$" libtcc1_o ${libtcc1_c})
+#    string(REGEX MATCH "^[^.]+" libtcc1_o ${libtcc1_o})
+#    set(libtcc1_o ${libtcc1_prefix}${libtcc1_o}.o)
+#    add_custom_command(OUTPUT ${libtcc1_o}
+#      COMMAND ${xcc} ${libtcc1_flags} -c ${CMAKE_SOURCE_DIR}/${libtcc1_c} -o ${libtcc1_o}
+#      DEPENDS ${xcc} ${CMAKE_SOURCE_DIR}/${libtcc1_c}
+#    )
+#    list(APPEND libtcc1_objects ${libtcc1_o})
+#  endforeach()
+#  add_custom_command(OUTPUT ${libtcc1_prefix}libtcc1.a
+#    COMMAND ${xar} ${libtcc1_prefix}libtcc1.a ${libtcc1_objects}
+#    DEPENDS ${xar} ${libtcc1_objects}
+#  )
+#  add_custom_target(${libtcc1_prefix}libtcc1 ALL DEPENDS ${libtcc1_prefix}libtcc1.a)
+#  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${libtcc1_prefix}libtcc1.a
+#    DESTINATION ${TCC_LIB_PATH}/${prefix} RENAME libtcc1.a)
+#endmacro()
+#
+#macro(make_tcc native_name cross_name cross_enabled definitions tcc_sources libtcc_ar libtcc_sources libtcc_includes)
+#  if (xx${native_name} STREQUAL xx${TCC_NATIVE_TARGET})
+#    set(TCC_NATIVE_DEFINITIONS ${definitions})
+#    if("${CONFIG_MULTIARCHDIR}" STRGREATER "")
+#      set(TCC_NATIVE_DEFINITIONS ${TCC_NATIVE_DEFINITIONS} CONFIG_MULTIARCHDIR="${CONFIG_MULTIARCHDIR}")
+#    endif()
+#    if("${CONFIG_LDDIR}" STRGREATER "")
+#      set(TCC_NATIVE_DEFINITIONS ${TCC_NATIVE_DEFINITIONS} CONFIG_LDDIR="${CONFIG_LDDIR}")
+#    endif()
+#
+#    set(TCC_NATIVE_FLAGS)
+#    foreach(make_tcc_def ${TCC_NATIVE_DEFINITIONS})
+#      set(TCC_NATIVE_FLAGS ${TCC_NATIVE_FLAGS} -D${make_tcc_def})
+#    endforeach()
+#
+#    if (TCC_BUILD_NATIVE)
+#      add_library(libtcc
+#        libtcc.c
+#        tccpp.c
+#        tccgen.c
+#        tccelf.c
+#        tccasm.c
+#        tccrun.c
+#        tcc.h
+#        libtcc.h
+#        tcctok.h
+#        ${tcc_sources}
+#      )
+#      set_target_properties(libtcc PROPERTIES OUTPUT_NAME tcc PREFIX lib)
+#      if(WIN32)
+#        set_target_properties(libtcc PROPERTIES LINK_FLAGS "-Wl,--output-def,libtcc.def")
+#      endif()
+#      add_executable(tcc tcc.c)
+#      target_link_libraries(tcc libtcc)
+#      if(NOT WIN32)
+#        target_link_libraries(tcc dl)
+#      endif()
+#      install(TARGETS tcc libtcc RUNTIME DESTINATION ${EXE_PATH} LIBRARY DESTINATION ${NATIVE_LIB_PATH} ARCHIVE DESTINATION ${NATIVE_LIB_PATH})
+#      set_target_properties(tcc libtcc PROPERTIES COMPILE_DEFINITIONS "${TCC_NATIVE_DEFINITIONS}")
+#
+#      if("${libtcc_sources}" STRGREATER "")
+#        make_libtcc1("" tcc "${libtcc_ar}" "${TCC_NATIVE_DEFINITIONS}" "${libtcc_includes}" "${libtcc_sources}")
+#      endif()
+#    endif()
+#  elseif(${cross_enabled})
+#    add_executable(${cross_name}-tcc tcc.c)
+#    set_target_properties(${cross_name}-tcc PROPERTIES COMPILE_DEFINITIONS "ONE_SOURCE;${definitions}")
+#    install(TARGETS ${cross_name}-tcc RUNTIME DESTINATION ${EXE_PATH})
+#
+#    if("${libtcc_sources}" STRGREATER "")
+#      make_libtcc1(${cross_name} "${cross_name}-tcc" "${libtcc_ar}" "${definitions}" "${libtcc_includes}" "${libtcc_sources}")
+#    endif()
+#  endif()
+#endmacro()
+#
+#make_tcc("Win32" i386-w64-mingw32 TCC_BUILD_WIN32
+#  "TCC_TARGET_I386;TCC_TARGET_PE"
+#  "${I386_SOURCES};tccpe.c"
+#  tiny_libmaker_32 "${LIBTCC1_I386_SOURCES};${LIBTCC1_WIN_SOURCES}" "win32/include;win32/include/winapi"
+#)
+#make_tcc("Win64" x86_64-w64-mingw32 TCC_BUILD_WIN64
+#  "TCC_TARGET_X86_64;TCC_TARGET_PE"
+#  "${X86_64_SOURCES};tccpe.c"
+#  tiny_libmaker_64 "lib/alloca86_64.S;${LIBTCC1_WIN_SOURCES}" "win32/include;win32/include/winapi"
+#)
+#make_tcc("WinCE" arm-wince-mingw32ce TCC_BUILD_WINCE
+#  "TCC_TARGET_ARM;TCC_ARM_VERSION=${TCC_ARM_VERSION};TCC_TARGET_PE"
+#  "${ARM_SOURCES};tccpe.c"
+#  "" "" ""
+#)
+#make_tcc("i386" i386-linux-gnu TCC_BUILD_I386
+#  TCC_TARGET_I386
+#  "${I386_SOURCES}"
+#  tiny_libmaker_32 "${LIBTCC1_I386_SOURCES}" ""
+#)
+#make_tcc("x86_64" x86_64-linux-gnu TCC_BUILD_X64
+#  TCC_TARGET_X86_64
+#  "${X86_64_SOURCES}"
+#  tiny_libmaker_64 "lib/alloca86_64.S" ""
+#)
+#set(ARM_DEFINITIONS TCC_TARGET_ARM TCC_ARM_VERSION=${TCC_ARM_VERSION})
+#make_tcc("" arm-linux-gnueabihf TCC_BUILD_ARM_EABIHF
+#  "${ARM_DEFINITIONS};TCC_ARM_EABI;TCC_ARM_HARDFLOAT"
+#  "${ARM_SOURCES}"
+#  "" "" ""
+#)
+#make_tcc("" arm-linux-gnueabi TCC_BUILD_ARM_EABI
+#  "${ARM_DEFINITIONS};TCC_ARM_EABI"
+#  "${ARM_SOURCES}"
+#  "" "" ""
+#)
+#make_tcc("" arm-linux-fpa TCC_BUILD_ARM_FPA
+#  "${ARM_DEFINITIONS}"
+#  "${ARM_SOURCES}"
+#  "" "" ""
+#)
+#make_tcc("" arm-linux-fpa-ld TCC_BUILD_ARM_FPA_LD
+#  "${ARM_DEFINITIONS};LDOUBLE_SIZE=12"
+#  "${ARM_SOURCES}"
+#  "" "" ""
+#)
+#make_tcc("" arm-linux-gnu TCC_BUILD_ARM_VFP
+#  "${ARM_DEFINITIONS};TCC_ARM_VFP"
+#  "${ARM_SOURCES}"
+#  "" "" ""
+#)
+#make_tcc("" c67 TCC_BUILD_C67
+#  TCC_TARGET_C67
+#  "c67-gen.c;tcccoff.c"
+#  "" "" ""
+#)
+#
+#add_subdirectory(tests)
+#
+#find_program(MAKEINFO NAMES makeinfo PATHS C:/MinGW/MSYS/1.0/bin)
+#if(MAKEINFO)
+#  add_custom_command(OUTPUT tcc-doc.html
+#    COMMAND ${MAKEINFO} --no-split --html -o tcc-doc.html ${CMAKE_CURRENT_SOURCE_DIR}/tcc-doc.texi
+#    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tcc-doc.texi
+#  )
+#  set(TCC_DOC_FILES tcc-doc.html)
+#  if(NOT WIN32)
+#    add_custom_command(OUTPUT tcc-doc.info
+#      COMMAND ${MAKEINFO} -o tcc-doc.info ${CMAKE_CURRENT_SOURCE_DIR}/tcc-doc.texi
+#      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tcc-doc.texi
+#    )
+#    set(TCC_DOC_FILES ${TCC_DOC_FILES} tcc-doc.info)
+#    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tcc-doc.info DESTINATION share/info)
+#  endif()
+#  add_custom_target(tcc-doc ALL DEPENDS ${TCC_DOC_FILES})
+#  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tcc-doc.html DESTINATION ${DOC_PATH})
+#endif()
+#
+#if(WIN32)
+#  file(GLOB WIN32_DEFS win32/lib/*.def)
+#  install(FILES ${WIN32_DEFS} DESTINATION lib)
+#  install(FILES tcclib.h DESTINATION include)
+#  install(DIRECTORY include/ DESTINATION include)
+#  install(DIRECTORY win32/include/ DESTINATION include)
+#  install(DIRECTORY win32/examples/ DESTINATION examples)
+#  install(FILES win32/tcc-win32.txt DESTINATION doc)
+#  install(FILES ${CMAKE_BINARY_DIR}/libtcc.def DESTINATION libtcc)
+#  install(FILES ${CMAKE_BINARY_DIR}/libtcc.dll.a DESTINATION libtcc RENAME libtcc.a)
+#  install(FILES libtcc.h DESTINATION libtcc)
+#else()
+#  install(FILES libtcc.h tcclib.h DESTINATION include)
+#  install(DIRECTORY include/ DESTINATION lib/tcc/include)
+#  install(DIRECTORY win32/include/ DESTINATION lib/tcc/win32/include)
+#  install(DIRECTORY include/ DESTINATION lib/tcc/win32/include)
+#endif()
+
+
+
 cmake_minimum_required(VERSION 3.1)
-project(tcc)
+
+include(cim/CMakeLists.txt)
+
+project(script C)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
-    bstring/bsafe.c
-    bstring/bsafe.h
-    bstring/bstest.c
-    bstring/bstraux.c
-    bstring/bstraux.h
-    bstring/bstrlib.c
-    bstring/bstrlib.h
-    bstring/bstrlib.txt
-    bstring/bstrwrap.cpp
-    bstring/bstrwrap.h
-    bstring/cpptest.cpp
-    bstring/gpl.txt
-    bstring/license.txt
-    bstring/porting.txt
-    bstring/security.txt
-    bstring/test.cpp
-    bstring/testaux.c
-    bstring/tst.c
-    doc/compile.txt
-    doc/tcc-doc.html
-    doc/tcc-win32.txt
-    examples/makproj/makproj/makproj.c
-    examples/dll.c
-    examples/fib.c
-    examples/hello_dll.c
-    examples/hello_win.c
-    include/json/arraylist.c
-    include/json/arraylist.h
-    include/json/bits.h
-    include/json/config.h
-    include/json/debug.c
-    include/json/debug.h
-    include/json/json.h
-    include/json/json_inttypes.h
-    include/json/json_object.c
-    include/json/json_object.h
-    include/json/json_object_private.h
-    include/json/json_tokener.c
-    include/json/json_tokener.h
-    include/json/json_util.c
-    include/json/json_util.h
-    include/json/jsonc.h
-    include/json/linkhash.c
-    include/json/linkhash.h
-    include/json/printbuf.c
-    include/json/printbuf.h
-    include/sys/fcntl.h
-    include/sys/file.h
-    include/sys/locking.h
-    include/sys/stat.h
-    include/sys/time.h
-    include/sys/timeb.h
-    include/sys/types.h
-    include/sys/unistd.h
-    include/sys/utime.h
-    include/winapi/basetsd.h
-    include/winapi/basetyps.h
-    include/winapi/winbase.h
-    include/winapi/wincon.h
-    include/winapi/windef.h
-    include/winapi/windows.h
-    include/winapi/winerror.h
-    include/winapi/wingdi.h
-    include/winapi/winnetwk.h
-    include/winapi/winnls.h
-    include/winapi/winnt.h
-    include/winapi/winreg.h
-    include/winapi/winsvc.h
-    include/winapi/winuser.h
-    include/winapi/winver.h
-    include/_mingw.h
-    include/assert.h
-    include/bsafe.c
-    include/bsafe.h
-    include/bson.c
-    include/bson.h
-    include/bstest.c
-    include/bstraux.c
-    include/bstraux.h
-    include/bstrlib.c
-    include/bstrlib.h
-    include/bstrwrap.h
-    include/conio.h
-    include/ctype.h
-    include/dir.h
-    include/direct.h
-    include/dirent.h
-    include/dos.h
-    include/encoding.c
-    include/encoding.h
-    include/env.h
-    include/env_default.c
-    include/env_posix.c
-    include/env_posix.h
-    include/errno.h
-    include/excpt.h
-    include/fcntl.h
-    include/fenv.h
-    include/float.h
-    include/gridfs.c
-    include/gridfs.h
-    include/headers.h
-    include/inttypes.h
-    include/io.h
-    include/kvec.h
-    include/limits.h
-    include/list.h
-    include/locale.h
-    include/malloc.h
-    include/math.h
-    include/md5.c
-    include/md5.h
-    include/mem.h
-    include/memory.h
-    include/mongo.c
-    include/mongo.h
-    include/mswsock.h
-    include/numbers.c
-    include/platform.h
-    include/process.h
-    include/setjmp.h
-    include/sglib.h
-    include/share.h
-    include/signal.h
-    include/slist.h
-    include/socket.c
-    include/socket.h
-    include/stdarg.h
-    include/stdbool.h
-    include/stddef.h
-    include/stdint.h
-    include/stdio.h
-    include/stdlib.h
-    include/stopwatch.c
-    include/stopwatch.h
-    include/string.h
-    include/tchar.h
-    include/testaux.c
-    include/time.h
-    include/timer.h
-    include/unistd.h
-    include/values.h
-    include/varargs.h
-    include/vasprintf.c
-    include/wchar.h
-    include/wctype.h
-    include/winsock.h
-    include/winsock2.h
-    json/arraylist.c
-    json/arraylist.h
-    json/AUTHORS
-    json/autogen.sh
-    json/bits.h
-    json/ChangeLog
-    json/config.h.in
-    json/config.h.win32
-    json/configure.in
-    json/COPYING
-    json/debug.c
-    json/debug.h
-    json/Doxyfile
-    json/INSTALL
-    json/json-c.vcproj
-    json/json.h
-    json/json.pc.in
-    json/json_inttypes.h
-    json/json_object.c
-    json/json_object.h
-    json/json_object_private.h
-    json/json_tokener.c
-    json/json_tokener.h
-    json/json_util.c
-    json/json_util.h
-    json/linkhash.c
-    json/linkhash.h
-    json/Makefile.am
-    json/NEWS
-    json/parse_int64.test
-    json/printbuf.c
-    json/printbuf.h
-    json/README
-    json/README-WIN32.html
-    json/README.html
-    json/test-defs.sh
-    json/test1.c
-    json/test1.expected
-    json/test1.test
-    json/test2.c
-    json/test2.expected
-    json/test2.test
-    json/test4.c
-    json/test4.expected
-    json/test4.test
-    json/test_cast.c
-    json/test_cast.expected
-    json/test_cast.test
-    json/test_null.c
-    json/test_null.expected
-    json/test_null.test
-    json/test_parse_int64.c
-    json/test_parse_int64.expected
-    lib/advapi32.def
-    lib/bstrlib.o
-    lib/gdi32.def
-    lib/kernel32.def
-    lib/libtcc1.a
-    lib/msvcrt.def
-    lib/user32.def
-    lib/ws2_32.def
-    lib/wsock32.def
-    mongo/docs/buildscripts/__init__.py
-    mongo/docs/buildscripts/docs.py
-    mongo/docs/source/sphinx/source/bson.rst
-    mongo/docs/source/sphinx/source/building.rst
-    mongo/docs/source/sphinx/source/conf.py
-    mongo/docs/source/sphinx/source/connections.rst
-    mongo/docs/source/sphinx/source/index.rst
-    mongo/docs/source/sphinx/source/tutorial.rst
-    mongo/docs/source/sphinx/make.bat
-    mongo/docs/source/sphinx/Makefile
-    mongo/src/bson.c
-    mongo/src/bson.h
-    mongo/src/encoding.c
-    mongo/src/encoding.h
-    mongo/src/env.h
-    mongo/src/env_default.c
-    mongo/src/env_posix.c
-    mongo/src/env_posix.h
-    mongo/src/gridfs.c
-    mongo/src/gridfs.h
-    mongo/src/md5.c
-    mongo/src/md5.h
-    mongo/src/mongo.c
-    mongo/src/mongo.h
-    mongo/src/numbers.c
-    mongo/src/platform.h
-    mongo/test/platform/linux/timeouts.c
-    mongo/test/auth.c
-    mongo/test/benchmark.c
-    mongo/test/bson.c
-    mongo/test/bson_subobject.c
-    mongo/test/compile_mongotsts.bat
-    mongo/test/compile_simple.bat
-    mongo/test/count_delete.c
-    mongo/test/cpptest.cpp
-    mongo/test/cursors.c
-    mongo/test/endian_swap.c
-    mongo/test/errors.c
-    mongo/test/examples.c
-    mongo/test/functions.c
-    mongo/test/gridfs.c
-    mongo/test/helpers.c
-    mongo/test/json.c
-    mongo/test/mongoTsts.c
-    mongo/test/oid.c
-    mongo/test/replica_set.c
-    mongo/test/resize.c
-    mongo/test/simple.c
-    mongo/test/sizes.c
-    mongo/test/test.h
-    mongo/test/update.c
-    mongo/test/validate.c
-    mongo/.astylerc
-    mongo/.gitignore
-    mongo/APACHE-2.0.txt
-    mongo/check_int64.sh
-    mongo/doxygenConfig
-    mongo/HISTORY.md
-    mongo/Makefile
-    mongo/README.md
-    mongo/SConstruct
-    sglib/doc/GenerateDoc
-    sglib/doc/index.html
-    sglib/doc/index.html.sss
-    sglib/doc/sssi
-    sglib/samples/arraybinsearch.c
-    sglib/samples/arraysort.c
-    sglib/samples/arraysort1.c
-    sglib/samples/dllist.c
-    sglib/samples/hash.c
-    sglib/samples/listinsertsort.c
-    sglib/samples/listinsertsort1.c
-    sglib/samples/listsort.c
-    sglib/samples/queue.c
-    sglib/samples/queue2.c
-    sglib/samples/rbtree.c
-    sglib/samples/selftest.c
-    sglib/samples/test.c
-    sglib/README
-    sglib/sglib.h
-    src/doc/Changelog
-    src/doc/COPYING
-    src/doc/README
-    src/doc/tcc-doc.html
-    src/doc/tcc-doc.texi
-    src/doc/TODO
-    src/examples/ex1.c
-    src/examples/ex2.c
-    src/examples/ex3.c
-    src/examples/ex4.c
-    src/examples/ex5.c
-    src/include/float.h
-    src/include/stdarg.h
-    src/include/stdbool.h
-    src/include/stddef.h
-    src/include/tcclib.h
-    src/include/varargs.h
-    src/lib/alloca86-bt.S
-    src/lib/alloca86.S
-    src/lib/bcheck.c
-    src/lib/libtcc1.c
-    "src/S(c)ript/web_examples/simpleDb.tcc"
-    "src/S(c)ript/web_examples/simpleJson.tcc"
-    "src/S(c)ript/web_examples/simpleMongoConn.tcc"
-    "src/S(c)ript/web_examples/sockets.tcc"
-    "src/S(c)ript/web_examples/test1.tcc"
-    "src/S(c)ript/web_examples/test2.tcc"
-    "src/S(c)ript/web_examples/testBson.tcc"
-    "src/S(c)ript/web_examples/testHtml.tcc"
-    "src/S(c)ript/web_examples/wsock.tcc"
-    "src/S(c)ript/S(c)ript.c"
-    "src/S(c)ript/TODO"
-    src/tests/asmtest.S
-    src/tests/boundtest.c
-    src/tests/gcctestsuite.sh
-    src/tests/libtcc_test.c
-    src/tests/Makefile
-    src/tests/tcctest.c
-    src/win32/examples/dll.c
-    src/win32/examples/fib.c
-    src/win32/examples/hello_dll.c
-    src/win32/examples/hello_win.c
-    src/win32/include/sys/fcntl.h
-    src/win32/include/sys/file.h
-    src/win32/include/sys/locking.h
-    src/win32/include/sys/stat.h
-    src/win32/include/sys/time.h
-    src/win32/include/sys/timeb.h
-    src/win32/include/sys/types.h
-    src/win32/include/sys/unistd.h
-    src/win32/include/sys/utime.h
-    src/win32/include/winapi/basetsd.h
-    src/win32/include/winapi/basetyps.h
-    src/win32/include/winapi/winbase.h
-    src/win32/include/winapi/wincon.h
-    src/win32/include/winapi/windef.h
-    src/win32/include/winapi/windows.h
-    src/win32/include/winapi/winerror.h
-    src/win32/include/winapi/wingdi.h
-    src/win32/include/winapi/winnetwk.h
-    src/win32/include/winapi/winnls.h
-    src/win32/include/winapi/winnt.h
-    src/win32/include/winapi/winreg.h
-    src/win32/include/winapi/winsvc.h
-    src/win32/include/winapi/winuser.h
-    src/win32/include/winapi/winver.h
-    src/win32/include/_mingw.h
-    src/win32/include/assert.h
-    src/win32/include/conio.h
-    src/win32/include/ctype.h
-    src/win32/include/dir.h
-    src/win32/include/direct.h
-    src/win32/include/dirent.h
-    src/win32/include/dos.h
-    src/win32/include/errno.h
-    src/win32/include/excpt.h
-    src/win32/include/fcntl.h
-    src/win32/include/fenv.h
-    src/win32/include/float.h
-    src/win32/include/inttypes.h
-    src/win32/include/io.h
-    src/win32/include/limits.h
-    src/win32/include/locale.h
-    src/win32/include/malloc.h
-    src/win32/include/math.h
-    src/win32/include/mem.h
-    src/win32/include/memory.h
-    src/win32/include/process.h
-    src/win32/include/setjmp.h
-    src/win32/include/share.h
-    src/win32/include/signal.h
-    src/win32/include/stdarg.h
-    src/win32/include/stdbool.h
-    src/win32/include/stddef.h
-    src/win32/include/stdint.h
-    src/win32/include/stdio.h
-    src/win32/include/stdlib.h
-    src/win32/include/string.h
-    src/win32/include/tchar.h
-    src/win32/include/time.h
-    src/win32/include/unistd.h
-    src/win32/include/values.h
-    src/win32/include/varargs.h
-    src/win32/include/wchar.h
-    src/win32/include/wctype.h
-    src/win32/lib/chkstk.S
-    src/win32/lib/crt1.c
-    src/win32/lib/dllcrt1.c
-    src/win32/lib/dllmain.c
-    src/win32/lib/gdi32.def
-    src/win32/lib/kernel32.def
-    src/win32/lib/msvcrt.def
-    src/win32/lib/user32.def
-    src/win32/lib/wincrt1.c
-    src/win32/libtcc/libtcc.h
-    src/win32/tools/tiny_impdef.c
-    src/win32/tools/tiny_libmaker.c
-    src/win32/build-tcc.bat
-    src/win32/tcc-win32.txt
-    src/arm-gen.c
-    src/c67-gen.c
-    src/coff.h
-    src/config.h
-    src/configure
-    src/elf.h
-    src/i386-asm.c
-    src/i386-asm.h
-    src/i386-gen.c
-    src/il-gen.c
-    src/il-opcodes.h
-    src/libtcc.c
-    src/libtcc.h
-    src/libtccCgi.c
-    src/libtccCgi.h
-    src/Makefile
-    src/stab.def
-    src/stab.h
-    src/tcc.c
-    src/tcc.h
-    src/tccasm.c
-    src/tccCgi.c
-    src/tccCgi.h
-    src/tcccoff.c
-    src/tccelf.c
-    src/tccgen.c
-    src/tccpe.c
-    src/tccpp.c
-    src/tcctok.h
-    src/texi2pod.pl
-    src/VERSION
-    src/x86_64-gen.c
-    tests/test1.tcc
-    tests/test2.tcc
-    tests/testbson.tcc
-    tests/testhtml.tcc
-    LICENSE
-    README.md)
+    "src/Script/Script.c"
+    "modules/tinycc/libtcc.h"
+    "modules/tinycc/libtcc.c"
+)
 
-include_directories(bstring)
+include_directories(modules/bstring)
+include_directories(modules/tinycc)
 
-add_executable(tcc ${SOURCE_FILES})
+include_directories(modules/sglib)
+#include_directories(include)
+
+
+add_executable(scrypt ${SOURCE_FILES})

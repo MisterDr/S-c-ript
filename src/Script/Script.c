@@ -1,11 +1,12 @@
 /*
- *  S(c)ript engine
+ *  Script engine
  *  Version 1.0
  *  Created by Djenad Razic 
  */
 
-//Comment this to produce IIS CGI
-//#define APACHEMOD
+// Comment this to produce IIS CGI, default is IIS CGI module
+// #define APACHEMOD
+// #define NGINXMOD
  
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,15 +14,17 @@
 #include <bstrlib.h>
 #include <sglib.h>
 
-#include "libtcc.h"
+#include <libtcc.h>
 
-//Include c files into the compiler
+// Include c files into the compiler
 #include <bstrlib.c>
 
-//TODO: Create apache mod
+// TODO: Create apache mod
 #ifdef APACHEMOD
 
 #endif
+
+// TODO: Create NGINX mod
 
 #define HEADER 1
 #define MAIN 2
@@ -370,10 +373,10 @@ int main(int argc, char **argv)
 	if (f == NULL)
 	{
 		printError("Cannot open file!\n\n");
-		return;
+		return 0;
 	}
 	
-	//Read and parse TCC file
+	// Read and parse TCC file
 	bstring b = readFile(f);	
 	fclose(f);	
 	
@@ -401,8 +404,10 @@ int main(int argc, char **argv)
     if (argc == 2 && !memcmp(argv[1], "lib_path=",9))
         tcc_set_lib_path(s, argv[1]+9);
 
+#if WIN32_LEAN_AND_MEAN
 	tcc_set_lib_path_w32(s);
-					
+#endif
+
     //MUST BE CALLED before any compilation
     //tcc_output_file(s, "testOutput.exe");
 	//tcc_set_output_type(s, TCC_OUTPUT_EXE);

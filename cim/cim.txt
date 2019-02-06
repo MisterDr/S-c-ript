@@ -1,0 +1,2 @@
+tinycc,Dynamic C Compiler,git://repo.or.cz/tinycc.git
+haywire,Highly concurrent non blocking HTTP server based on libuv,https://github.com/haywire/haywire.git

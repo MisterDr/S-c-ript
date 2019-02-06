@@ -1,4 +1,7 @@
-
+deps
+.vscode
+.idea
+cmake-build-debug
 test.exe
 tcc.exe
 tiny_impdef.exe
